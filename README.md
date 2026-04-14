@@ -1,0 +1,1 @@
+# Multimedia-Mini-Project-Simplified-MPEG4-Video-Encoder-Pipeline
