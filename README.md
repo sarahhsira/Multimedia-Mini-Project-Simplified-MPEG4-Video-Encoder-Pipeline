@@ -1,9 +1,26 @@
-🎬 Simplified MPEG-4 Video Encoder 📌 Description
+🎬 Simplified MPEG-4 Video Encoder Pipeline
+📌 Overview
 
-This project implements a simplified MPEG-4-like video encoder and decoder in Python.
+This project is a simplified multimedia compression system inspired by MPEG-4 concepts.
+It processes a sequence of images as a video and demonstrates how raw visual data can be transformed into a compressed binary representation and reconstructed back with minimal loss.
 
-It demonstrates the core principles of video compression by reducing both spatial and temporal redundancy in a sequence of image frames. The system applies discrete cosine transform (DCT) for intra-frame compression and motion estimation for inter-frame prediction, followed by entropy coding to generate a compressed binary bitstream.
+⚙️ Features
 
-The encoded data can be decoded to reconstruct the original frames, illustrating the complete pipeline of a basic video codec.
+🖼️ Frame preprocessing with color space conversion (YCbCr)
+🎯 DCT-based intra-frame compression (JPEG-inspired)
+📉 Quantization of frequency coefficients
+🧭 Motion estimation using macroblocks (P-frame prediction)
+🔁 RLE (Run-Length Encoding) for efficient data reduction
+🔐 LZW lossless compression for entropy coding
+🔄 Reconstruction of compressed visual data
 
-This project is intended for educational purposes to understand how modern video compression standards such as MPEG-4 operate at a fundamental level.
+🧠 Educational Goal
+
+This project demonstrates how modern video compression systems work by breaking down the process into simple stages: transforming images into frequency representations, reducing redundancy, compressing data efficiently, and reconstructing visual content.
+
+🛠️ Tech Stack
+
+Python 🐍
+OpenCV
+NumPy
+Matplotlib
