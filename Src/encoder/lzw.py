@@ -1,40 +1,57 @@
-def lzw_encode(data):
-    dict_ = {chr(i): i for i in range(256)}
-    current = ""
-    code = 256
+# lzw.py corrigé - Version qui travaille avec des bytes
+def lzw_encode_bytes(data):
+    """LZW encoding sur des données bytes"""
+    if not data:
+        return []
+    
+    # Dictionnaire initial avec les 256 valeurs possibles
+    dict_size = 256
+    dictionary = {bytes([i]): i for i in range(dict_size)}
+    
     result = []
-
-    for c in data:
-        temp = current + c
-        if temp in dict_:
-            current = temp
+    current = bytes([])
+    
+    for byte in data:
+        byte_bytes = bytes([byte])
+        new_current = current + byte_bytes
+        
+        if new_current in dictionary:
+            current = new_current
         else:
-            result.append(dict_[current])
-            dict_[temp] = code
-            code += 1
-            current = c
-
+            if current:
+                result.append(dictionary[current])
+            dictionary[new_current] = dict_size
+            dict_size += 1
+            current = byte_bytes
+    
     if current:
-        result.append(dict_[current])
-
+        result.append(dictionary[current])
+    
     return result
 
-
-def lzw_decode(data):
-    dict_ = {i: chr(i) for i in range(256)}
-    current = chr(data[0])
-    result = [current]
-    code = 256
-
-    for k in data[1:]:
-        if k in dict_:
-            entry = dict_[k]
+def lzw_decode_bytes(encoded_data):
+    """LZW decoding vers des bytes"""
+    if not encoded_data:
+        return bytes([])
+    
+    dict_size = 256
+    dictionary = {i: bytes([i]) for i in range(dict_size)}
+    
+    result = []
+    current = bytes([encoded_data[0]])
+    result.append(current)
+    
+    for code in encoded_data[1:]:
+        if code in dictionary:
+            entry = dictionary[code]
+        elif code == dict_size:
+            entry = current + current[:1]
         else:
-            entry = current + current[0]
-
+            raise ValueError(f"Code invalide: {code}")
+        
         result.append(entry)
-        dict_[code] = current + entry[0]
-        code += 1
+        dictionary[dict_size] = current + entry[:1]
+        dict_size += 1
         current = entry
-
-    return ''.join(result)
+    
+    return b''.join(result)

@@ -1,4 +1,7 @@
 def rle_encode(data):
+    if len(data) == 0:
+        return []
+
     encoded = []
     prev = data[0]
     count = 1
@@ -17,6 +20,8 @@ def rle_encode(data):
 
 def rle_decode(data):
     out = []
+
     for value, count in data:
         out.extend([value] * count)
+
     return out
