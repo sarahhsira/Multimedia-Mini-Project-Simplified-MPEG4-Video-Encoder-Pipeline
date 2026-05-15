@@ -211,5 +211,4 @@ if __name__ == "__main__":
     print(f"Graphes sauvegardés dans : {OUTPUT_PATH}/")
     print("  - graph_ratio_vs_Q.png")
     print("  - graph_ratio_vs_GOP.png")
-    print("Inclus ces deux images dans ton report.pdf !")
     print("=" * 55)
