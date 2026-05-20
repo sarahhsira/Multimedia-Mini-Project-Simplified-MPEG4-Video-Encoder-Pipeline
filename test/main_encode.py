@@ -13,9 +13,7 @@ from visualize import visualize_complete_pipeline
 GOP = 3
 Q = 50
 
-# ============================================================
 # 1. ENCODAGE
-# ============================================================
 frames_path = "test/frames"
 print("=" * 50)
 print("ENCODEUR VIDÉO MPEG-4")
@@ -30,9 +28,8 @@ print(f"\nEncodage terminé : {len(video)} frames")
 print(f"  - I-frames : {i_frames}")
 print(f"  - P-frames : {p_frames}")
 
-# ============================================================
-# 2. SÉRIALISATION + COMPRESSION LZW → fichier .bin
-# ============================================================
+# 2. SÉRIALISATION + COMPRESSION LZW --> fichier .bin
+
 print("\nCompression LZW + écriture du fichier .bin ...")
 data = pickle.dumps(video)
 print(f"  Taille pickle (avant LZW) : {len(data)} bytes")
@@ -50,9 +47,7 @@ with open(file_path, "wb") as f:
 compressed_size = os.path.getsize(file_path)
 print(f"  Taille finale du .bin : {compressed_size} bytes")
 
-# ============================================================
 # 3. STATISTIQUES DE COMPRESSION
-# ============================================================
 frames_list = sorted([
     f for f in os.listdir(frames_path)
     if f.lower().endswith(('.png', '.jpg', '.jpeg'))
@@ -69,23 +64,22 @@ print(f"Taille compressée (.bin)        : {compressed_size} bytes")
 print(f"Taux de compression             : {compression_ratio(original_size, compressed_size):.2f}:1")
 print(f"Gain d'espace                   : {compression_percentage(original_size, compressed_size):.1f}%")
 
-# ============================================================
+
 # 4. PRÉPARATION DES DONNÉES POUR LA VISUALISATION
-# ============================================================
 print("\nPréparation de la visualisation ...")
 
 # Image de référence pour la visualisation
 test_img = resize(load_image(os.path.join(frames_path, frames_list[0])))
 ycbcr_original = to_ycbcr(test_img)
 
-# Vecteurs de mouvement : prendre la première P-frame disponible
+# Vecteurs de mouvement 
 motion_vectors_real = []
 for frame in video:
     if frame[0] == "P":
         motion_vectors_real = frame[1]
         break
 
-# Pipeline DCT sur un bloc 8x8 (pour la visu panneau 3)
+# Pipeline DCT 
 block_y = ycbcr_original[0:8, 0:8, 0].astype(np.float32)
 block_centered = block_y - 128
 dct_coeffs = cv2.dct(block_centered)
@@ -101,7 +95,7 @@ dct_pipeline_visu = {
     'reconstructed':  reconstructed_block,
 }
 
-# Carte de résiduel (magnitude des vecteurs de mouvement)
+# Carte de résiduel
 residual_visu = np.zeros((256, 256), dtype=np.float32)
 for i, (dx, dy) in enumerate(motion_vectors_real[:256]):
     x = (i // 16) * 16
@@ -109,12 +103,11 @@ for i, (dx, dy) in enumerate(motion_vectors_real[:256]):
     if x < 256 and y < 256:
         residual_visu[x:x + 4, y:y + 4] = np.sqrt(dx ** 2 + dy ** 2) * 5
 
-# Image reconstruite (canal Y de la frame de test)
+# Image reconstruite 
 reconstructed_visu = ycbcr_original[:, :, 0]
 
-# ============================================================
 # 5. VISUALISATION
-# ============================================================
+
 print("Génération de la figure ...")
 visualize_complete_pipeline(
     frames_path=frames_path,

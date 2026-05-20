@@ -2,28 +2,21 @@ import numpy as np
 
 
 def compression_ratio(original_size, compressed_size):
-    """Ratio original / compressé (ex: 5.3 veut dire 5.3x plus petit)."""
+    
     if compressed_size == 0:
         return 0
     return original_size / compressed_size
 
 
 def compression_percentage(original_size, compressed_size):
-    """Pourcentage de gain (ex: 81% veut dire qu'on a économisé 81% de l'espace)."""
+    # Pourcentage de gain 
     if original_size == 0:
         return 0
     return (1 - compressed_size / original_size) * 100
 
-
+# Calcule le PSNR
 def psnr(original, reconstructed):
-    """
-    Calcule le PSNR (Peak Signal-to-Noise Ratio) entre deux images.
-    - original / reconstructed : numpy arrays (H, W) ou (H, W, C), dtype uint8 ou float
-    - Retourne la valeur en dB (plus c'est élevé, meilleure est la qualité).
-      > 40 dB  → excellent
-      30–40 dB → bon
-      < 30 dB  → qualité visible dégradée
-    """
+
     orig = original.astype(np.float32)
     rec  = reconstructed.astype(np.float32)
     mse  = np.mean((orig - rec) ** 2)
@@ -31,13 +24,9 @@ def psnr(original, reconstructed):
         return float('inf')
     return 10.0 * np.log10(255.0 ** 2 / mse)
 
-
+# Calcule le SSIM
 def ssim(original, reconstructed):
-    """
-    Calcule le SSIM (Structural Similarity Index) simplifié.
-    Valeur entre -1 et 1 (1 = images identiques).
-    Travaille sur des images en niveaux de gris (2D).
-    """
+
     orig = original.astype(np.float64)
     rec  = reconstructed.astype(np.float64)
 

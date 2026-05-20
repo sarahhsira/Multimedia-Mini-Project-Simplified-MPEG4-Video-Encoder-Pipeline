@@ -9,7 +9,7 @@ def visualize_complete_pipeline(frames_path, video_data, motion_vectors,
     fig, axes = plt.subplots(2, 3, figsize=(18, 11))
     fig.suptitle("Pipeline complet d'encodage vidéo MPEG-4", fontsize=16, fontweight='bold', y=0.98)
 
-    # ── 1. Images originales ──────────────────────────────────
+    #  1. Images originales 
     frames = sorted([f for f in os.listdir(frames_path) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
     axes[0, 0].clear()
     positions_x = [25, 120, 215]
@@ -30,7 +30,7 @@ def visualize_complete_pipeline(frames_path, video_data, motion_vectors,
     axes[0, 0].text(5, 198, 'Q = 50', fontsize=9, color='gray')
     axes[0, 0].text(5, 186, 'Search = ±8', fontsize=9, color='gray')
 
-    # ── 2. Espace YCbCr ───────────────────────────────────────
+    # 2. Espace YCbCr
     Y, Cb, Cr = cv2.split(ycbcr_img)
     if Y.shape != Cb.shape:
         Cb = cv2.resize(Cb, (Y.shape[1], Y.shape[0]))
@@ -50,7 +50,7 @@ def visualize_complete_pipeline(frames_path, video_data, motion_vectors,
     axes[0, 1].axvline(x=w, color='gray', linewidth=1, linestyle='--')
     axes[0, 1].axvline(x=w + margin + w, color='gray', linewidth=1, linestyle='--')
 
-    # ── 3. DCT + Quantification ───────────────────────────────
+    # 3. DCT + Quantification 
     display = np.zeros((8, 60))
     display[:, 2:10] = dct_pipeline_data['original']
     display[:, 18:26] = dct_pipeline_data['dct_norm']
@@ -74,7 +74,7 @@ def visualize_complete_pipeline(frames_path, video_data, motion_vectors,
     axes[0, 2].axvline(x=26, color='lightgray', linewidth=0.8, linestyle='--')
     axes[0, 2].axvline(x=42, color='lightgray', linewidth=0.8, linestyle='--')
 
-    # ── 4. Vecteurs de mouvement ──────────────────────────────
+    # 4. Vecteurs de mouvement 
     first_frame = cv2.imread(os.path.join(frames_path, frames[0]))
     first_frame_gray = cv2.cvtColor(first_frame, cv2.COLOR_BGR2GRAY)
     first_frame_resized = cv2.resize(first_frame_gray, (256, 256))
@@ -94,13 +94,13 @@ def visualize_complete_pipeline(frames_path, video_data, motion_vectors,
     axes[1, 0].axis('off')
     axes[1, 0].text(128, 275, f'{len(motion_vectors)} vecteurs', fontsize=9, ha='center', color='gray')
 
-    # ── 5. Carte de résiduel ──────────────────────────────────
+    # 5. Carte de résiduel 
     im = axes[1, 1].imshow(residual_img, cmap='RdBu', vmin=-40, vmax=40)
     axes[1, 1].set_title('5. Carte de résiduel', fontsize=12, fontweight='bold')
     axes[1, 1].axis('off')
     plt.colorbar(im, ax=axes[1, 1], fraction=0.05, pad=0.03)
 
-    # ── 6. Image reconstruite ─────────────────────────────────
+    # 6. Image reconstruite 
     axes[1, 2].imshow(reconstructed_img, cmap='gray')
     axes[1, 2].set_title('6. Image reconstruite', fontsize=12, fontweight='bold')
     axes[1, 2].axis('off')

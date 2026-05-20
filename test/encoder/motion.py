@@ -5,11 +5,7 @@ SEARCH = 8
 
 
 def block_matching(curr, ref, x, y):
-    """
-    Cherche le meilleur bloc dans ref correspondant au bloc (x,y) de curr.
-    Utilise SAD (Sum of Absolute Differences) — plus rapide que MSE.
-    Retourne (dx, dy) : le vecteur de mouvement.
-    """
+   
     h, w = ref.shape
     best_dx, best_dy = 0, 0
     min_error = float('inf')

@@ -10,16 +10,10 @@ GOP = 3
 Q = 50
 
 
-# ============================================================
-# ENCODAGE D'UNE I-FRAME
-# ============================================================
 
+# Encodage  I-FRAME
 def encode_frame(img, q=Q):
-    """
-    Encode une I-frame complète (canaux Y, Cb, Cr).
-    Pour chaque canal : découpe en blocs 8x8 → DCT → quantification → RLE.
-    Retourne un dict {'Y': [...], 'Cb': [...], 'Cr': [...]}.
-    """
+
     ycbcr = to_ycbcr(img)
     compressed = {}
 
@@ -32,7 +26,6 @@ def encode_frame(img, q=Q):
             for j in range(0, w, BLOCK):
                 block = channel[i:i + BLOCK, j:j + BLOCK]
 
-                # Padding si le bloc est aux bords et n'est pas 8x8
                 if block.shape != (BLOCK, BLOCK):
                     padded = np.zeros((BLOCK, BLOCK), dtype=np.float32)
                     padded[:block.shape[0], :block.shape[1]] = block
@@ -46,17 +39,8 @@ def encode_frame(img, q=Q):
 
     return compressed
 
-
-# ============================================================
-# DÉCODAGE D'UNE I-FRAME  ← c'était la fonction vide, maintenant complète
-# ============================================================
-
+# Decodage I-FRAME  
 def decode_frame(encoded_data, shape, q=Q):
-    """
-    Décode une I-frame encodée par encode_frame().
-    Pour chaque canal : RLE decode → déquantification → IDCT → reconstruction.
-    Retourne une image YCbCr (h, w, 3) en uint8.
-    """
     h, w = shape
     result = np.zeros((h, w, 3), dtype=np.uint8)
 
@@ -70,21 +54,20 @@ def decode_frame(encoded_data, shape, q=Q):
                 if idx >= len(channel_blocks):
                     break
 
-                # 1. RLE decode
+                #  RLE decode
                 flat = rle_decode(channel_blocks[idx])
                 idx += 1
 
                 if len(flat) != BLOCK * BLOCK:
                     continue
 
-                # 2. Déquantification
+                #  Déquantification
                 arr = np.array(flat, dtype=np.int16).reshape((BLOCK, BLOCK))
                 deq = dequantize(arr, q)
 
-                # 3. IDCT
+                # IDCT
                 block = idct_2d(deq).astype(np.float32)
 
-                # 4. Remettre dans l'image (en gérant les bords)
                 i_end = min(i + BLOCK, h)
                 j_end = min(j + BLOCK, w)
                 channel_img[i:i_end, j:j_end] = block[:i_end - i, :j_end - j]
@@ -94,17 +77,10 @@ def decode_frame(encoded_data, shape, q=Q):
     return result
 
 
-# ============================================================
-# DÉCODAGE D'UNE P-FRAME  ← était aussi incomplète, maintenant complète
-# ============================================================
 
+# Decodage P-FRAME 
 def decode_p_frame(shape, motions, residuals, Y_ref, q, Cb, Cr):
-    """
-    Décode une P-frame.
-    Reconstruit Y en ajoutant le résiduel décodé au bloc prédit depuis Y_ref.
-    Cb et Cr viennent directement de la frame courante (non codés en P).
-    Retourne une image YCbCr (h, w, 3) en uint8.
-    """
+
     h, w = shape
     Y_pred = np.zeros((h, w), dtype=np.float32)
 
@@ -118,12 +94,10 @@ def decode_p_frame(shape, motions, residuals, Y_ref, q, Cb, Cr):
 
             dx, dy = motions[mb_idx]
 
-            # Bloc de référence dans la frame précédente (avec clamp aux bords)
             pred_x = max(0, min(x + dx, h - 16))
             pred_y = max(0, min(y + dy, w - 16))
             pred_block = Y_ref[pred_x:pred_x + 16, pred_y:pred_y + 16].astype(np.float32)
 
-            # Décoder le résiduel (4 sous-blocs 8x8)
             residual_sum = np.zeros((16, 16), dtype=np.float32)
 
             if mb_idx < len(residuals):
@@ -133,8 +107,7 @@ def decode_p_frame(shape, motions, residuals, Y_ref, q, Cb, Cr):
                         continue
                     arr = np.array(flat, dtype=np.int16).reshape((8, 8))
                     deq = dequantize(arr, q)
-                    # idct_2d recentre (+128), mais le résiduel ne doit pas être recentré
-                    # → on utilise directement cv2.idct sans +128
+        
                     import cv2
                     res = cv2.idct(np.float32(deq))
                     row = (i2 // 2) * 8
@@ -151,16 +124,9 @@ def decode_p_frame(shape, motions, residuals, Y_ref, q, Cb, Cr):
     return result
 
 
-# ============================================================
-# ENCODAGE DU DOSSIER COMPLET
-# ============================================================
-
+# Encodage  de toutes les frames 
 def encode_folder(folder):
-    """
-    Encode toutes les frames d'un dossier.
-    Toutes les GOP-ièmes frames → I-frame, les autres → P-frame.
-    Utilise l'image DÉCODÉE comme référence (et non l'originale).
-    """
+
     frames = sorted([
         f for f in os.listdir(folder)
         if f.lower().endswith((".png", ".jpg", ".jpeg"))
@@ -175,14 +141,13 @@ def encode_folder(folder):
         img = resize(img)
         ycbcr = to_ycbcr(img)
 
-        # ── I-FRAME ──────────────────────────────────────────
+        # I-FRAME 
         if i % GOP == 0 or prev_decoded is None:
             encoded = encode_frame(img, q=Q)
             video.append(("I", encoded, {"q": Q}))
-            # Décoder pour avoir la vraie référence (avec pertes de compression)
             prev_decoded = decode_frame(encoded, ycbcr.shape[:2], Q)
 
-        # ── P-FRAME ──────────────────────────────────────────
+        # P-FRAME 
         else:
             Y_current = ycbcr[:, :, 0].astype(np.float32)
             Y_ref = prev_decoded[:, :, 0].astype(np.float32)
@@ -205,8 +170,6 @@ def encode_folder(folder):
 
                     residual = curr_block - pred_block
 
-                    # Encoder le résiduel en 4 sous-blocs 8x8
-                    # Le résiduel n'est PAS centré sur 128 → on utilise cv2.dct directement
                     import cv2
                     res_blocks = []
                     for i2 in range(0, 16, 8):
@@ -219,7 +182,6 @@ def encode_folder(folder):
 
             video.append(("P", motions, residuals, {"q": Q}))
 
-            # Décoder la P-frame pour la prochaine référence
             prev_decoded = decode_p_frame(
                 ycbcr.shape[:2], motions, residuals,
                 Y_ref, Q,

@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 
-# Matrice de quantification JPEG standard — définie une seule fois
-# pour être sûr que quantize() et dequantize() utilisent exactement la même
+# Matrice de quantification JPEG standard (8x8) pour la luminance
 Q_STANDARD = np.array([
     [16, 11, 10, 16, 24, 40, 51, 61],
     [12, 12, 14, 19, 26, 58, 60, 55],
@@ -16,7 +15,7 @@ Q_STANDARD = np.array([
 
 
 def _build_Q(q):
-    """Construit la matrice de quantification à partir du facteur q."""
+    # Construit la matrice de quantification 
     scale = q / 50.0
     if scale < 1:
         scale = 1.0 / (2.0 - scale)
@@ -24,20 +23,18 @@ def _build_Q(q):
 
 
 def dct_2d(block):
-    """DCT 2D sur un bloc 8x8 (centre autour de 0 avant la DCT)."""
     return cv2.dct(np.float32(block) - 128)
 
 
 def idct_2d(dct_coeffs):
-    """IDCT 2D — recentre et clippe entre 0 et 255."""
     return np.clip(cv2.idct(np.float32(dct_coeffs)) + 128, 0, 255).astype(np.uint8)
 
 
 def quantize(block, q=50):
-    """Quantification : divise par Q et arrondit."""
+    # Quantification 
     return np.round(block / _build_Q(q)).astype(np.int16)
 
 
 def dequantize(quantized_block, q=50):
-    """Déquantification : multiplie par la même matrice Q."""
+    # Déquantification 
     return quantized_block.astype(np.float32) * _build_Q(q)

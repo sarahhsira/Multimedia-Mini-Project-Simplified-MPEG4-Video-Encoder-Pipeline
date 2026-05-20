@@ -14,17 +14,17 @@ def resize(img, size=(256, 256)):
 
 
 def to_ycbcr(img):
-    """Convertit BGR → YCrCb (espace utilisé par OpenCV)."""
+    #Convertit BGR to YCrCb 
     return cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
 
 
 def from_ycbcr(img):
-    """Convertit YCrCb → BGR."""
+    #Convertit YCrCb to  BGR
     return cv2.cvtColor(img, cv2.COLOR_YCrCb2BGR)
 
 
 def subsample_chrominance(ycbcr_img, ratio=2):
-    """Sous-échantillonnage 4:2:0 — réduit Cb et Cr de moitié."""
+    #Sous-échantillonnage 4:2:0 
     Y, Cb, Cr = cv2.split(ycbcr_img)
     Cb_sub = cv2.resize(Cb, (Cb.shape[1] // ratio, Cb.shape[0] // ratio),
                         interpolation=cv2.INTER_LINEAR)
@@ -34,7 +34,7 @@ def subsample_chrominance(ycbcr_img, ratio=2):
 
 
 def upsample_chrominance(Cb_small, Cr_small, target_shape):
-    """Ré-échantillonnage Cb/Cr pour la reconstruction."""
+    #Ré-échantillonnage
     Cb_big = cv2.resize(Cb_small, (target_shape[1], target_shape[0]),
                         interpolation=cv2.INTER_LINEAR)
     Cr_big = cv2.resize(Cr_small, (target_shape[1], target_shape[0]),

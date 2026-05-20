@@ -1,5 +1,5 @@
 def rle_encode(data):
-    """Encode une liste par RLE → liste de tuples (valeur, count)."""
+    
     if len(data) == 0:
         return []
     encoded = []
@@ -17,7 +17,7 @@ def rle_encode(data):
 
 
 def rle_decode(data):
-    """Décode une liste de tuples (valeur, count) → liste."""
+    
     out = []
     for value, count in data:
         out.extend([value] * count)

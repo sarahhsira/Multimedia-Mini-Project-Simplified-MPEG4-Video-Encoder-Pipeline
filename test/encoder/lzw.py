@@ -1,5 +1,5 @@
 def lzw_encode_bytes(data):
-    """LZW encoding sur des données bytes."""
+    
     if not data:
         return []
     dict_size = 256
@@ -22,7 +22,7 @@ def lzw_encode_bytes(data):
 
 
 def lzw_decode_bytes(encoded_data):
-    """LZW decoding vers des bytes."""
+
     if not encoded_data:
         return bytes([])
     dict_size = 256

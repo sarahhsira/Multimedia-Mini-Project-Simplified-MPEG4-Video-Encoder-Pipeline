@@ -7,17 +7,15 @@ from encoder.lzw import lzw_decode_bytes
 from decoder.decode import decode_frame, decode_pframe, rebuild_image
 from utils import compression_ratio, compression_percentage, psnr
 
-# ============================================================
-# MAIN — DÉCOMPRESSEUR VIDÉO MPEG-4
-# ============================================================
 
+# Main — DÉCOMPRESSEUR VIDÉO MPEG-4
 def main():
     print("=" * 50)
     print("DÉCOMPRESSEUR VIDÉO MPEG-4")
     print("=" * 50)
 
     bin_path    = os.path.join("test/output", "video.bin")
-    frames_path = "test/frames"   # frames originales pour le calcul du PSNR
+    frames_path = "test/frames"   # frames originales
 
     if not os.path.exists(bin_path):
         print(f"Fichier non trouvé : {bin_path}")
@@ -42,7 +40,7 @@ def main():
     video = pickle.loads(data_bytes)
     print(f"  Frames : {len(video)}")
 
-    # 4. Charger les frames originales (pour PSNR)
+    # 4. Charger les frames originales 
     original_frames = []
     original_size   = 0
     if os.path.exists(frames_path):
@@ -63,13 +61,13 @@ def main():
     prev_Y   = None
     q        = 50
     i_count  = p_count = 0
-    psnr_values = []        # PSNR par frame
-    frame_types = []        # 'I' ou 'P' par frame
+    psnr_values = []       
+    frame_types = []        # 'I' ou 'P' pour chaque frame
 
     for i, frame_data in enumerate(video):
         frame_type = frame_data[0]
 
-        # ── I-FRAME ──────────────────────────────────────────
+        # I-FRAME
         if frame_type == "I":
             encoded_data = frame_data[1]
             q = frame_data[2].get("q", 50)
@@ -95,7 +93,7 @@ def main():
             frame_types.append('I')
             print(f"  Frame {i}: I-frame OK")
 
-        # ── P-FRAME ──────────────────────────────────────────
+        # P-FRAME
         elif frame_type == "P":
             motions   = frame_data[1]
             residuals = frame_data[2]
@@ -124,7 +122,7 @@ def main():
             frame_types.append('P')
             print(f"  Frame {i}: P-frame OK ({len(motions)} vecteurs)")
 
-        # ── Calcul PSNR ──────────────────────────────────────
+        # Calcul PSNR 
         if i < len(original_frames) and reconstructed_frames:
             p = psnr(original_frames[i], reconstructed_frames[-1])
             psnr_values.append(p)
@@ -142,7 +140,7 @@ def main():
 
     print(f"  {len(reconstructed_frames)} images sauvegardées dans {out_dir}/")
 
-    # 7. Statistiques complètes
+    # 7. Statistiques
     print("\n" + "=" * 50)
     print("STATISTIQUES")
     print("=" * 50)

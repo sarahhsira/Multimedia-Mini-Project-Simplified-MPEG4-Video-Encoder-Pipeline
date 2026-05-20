@@ -1,13 +1,4 @@
-"""
-experimental_analysis.py
-=========================
-Génère les deux graphes demandés dans le rapport :
-  1. Compression ratio vs Quantization Factor (Q)
-  2. Compression ratio vs GOP size
-
-Lance ce script APRÈS avoir configuré ton dossier de frames.
-Les figures sont sauvegardées dans test/output/
-"""
+# générer les graphes du taux de compression selon Q et le GOP 
 
 import os
 import pickle
@@ -23,13 +14,7 @@ FRAMES_PATH = "test/frames"
 OUTPUT_PATH = "test/output"
 os.makedirs(OUTPUT_PATH, exist_ok=True)
 
-
-# ============================================================
-# HELPERS
-# ============================================================
-
 def get_original_size(frames_path):
-    """Taille brute (pixels × 3) de toutes les frames."""
     total = 0
     for f in sorted(os.listdir(frames_path)):
         if f.lower().endswith(('.png', '.jpg', '.jpeg')):
@@ -41,15 +26,11 @@ def get_original_size(frames_path):
 
 
 def encode_and_measure(frames_path, q_val, gop_val):
-    """
-    Encode le dossier avec les paramètres donnés et retourne
-    (compressed_size_bytes, avg_psnr).
-    On importe dynamiquement les constantes pour les modifier à la volée.
-    """
+    
     import encoder.encode as enc_mod
     import encoder.motion as mot_mod
 
-    # Modifier les constantes globales temporairement
+    # Modifier les constantes Q et GOP 
     orig_Q   = enc_mod.Q
     orig_GOP = enc_mod.GOP
 
@@ -67,11 +48,7 @@ def encode_and_measure(frames_path, q_val, gop_val):
 
     return compressed_size
 
-
-# ============================================================
 # GRAPHE 1 — Compression ratio vs Q
-# ============================================================
-
 def plot_ratio_vs_q(frames_path, output_path):
     print("\n[1/2] Compression ratio vs Q ...")
 
@@ -114,7 +91,7 @@ def plot_ratio_vs_q(frames_path, output_path):
     for x, y in zip(Q_values, gains):
         ax2.text(x, y + 0.5, f"{y:.1f}%", ha='center', fontsize=9)
 
-    # Annotation : Q=50 (valeur par défaut du projet)
+    # Annotation : Q=50 
     default_idx = Q_values.index(50)
     ax1.axvline(x=50, color='red', linestyle='--', alpha=0.5, label='Q=50 (défaut)')
     ax1.legend(fontsize=9)
@@ -129,10 +106,7 @@ def plot_ratio_vs_q(frames_path, output_path):
     return fig
 
 
-# ============================================================
 # GRAPHE 2 — Compression ratio vs GOP size
-# ============================================================
-
 def plot_ratio_vs_gop(frames_path, output_path):
     print("\n[2/2] Compression ratio vs GOP size ...")
 
@@ -188,11 +162,7 @@ def plot_ratio_vs_gop(frames_path, output_path):
     print(f"  → Sauvegardé : {save_path}")
     return fig
 
-
-# ============================================================
-# MAIN
-# ============================================================
-
+# main
 if __name__ == "__main__":
     print("=" * 55)
     print("ANALYSE EXPÉRIMENTALE — MPEG-4 ENCODER")
